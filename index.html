@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="TACTIX - Offline-first Tactical Military Platform">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <title>TACTIX | Tactical Operations Platform</title>
+  <link rel="stylesheet" href="styles/tactical.css">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+</head>
+<body>
+  <!-- LOGIN VIEW -->
+  <div id="login-view" class="view active">
+    <div class="login-backdrop"></div>
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="logo-mark">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 4L6 14V34L24 44L42 34V14L24 4Z" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="M24 4V44M6 14L42 34M42 14L6 34" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
+              <circle cx="24" cy="24" r="6" fill="currentColor" opacity="0.8"/>
+            </svg>
+          </div>
+          <h1 class="login-title">TACTIX</h1>
+          <p class="login-subtitle">Tactical Operations Platform</p>
+        </div>
+
+        <div class="role-tabs">
+          <button class="role-tab active" data-role="soldier">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/></svg>
+            Field Soldier
+          </button>
+          <button class="role-tab" data-role="admin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+            Base Command
+          </button>
+        </div>
+
+        <form id="login-form" class="login-form">
+          <div class="input-group">
+            <label for="username">Service ID</label>
+            <div class="input-wrapper">
+              <input type="text" id="username" placeholder="Enter Service ID" autocomplete="off" required>
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="password">Tactical Key</label>
+            <div class="input-wrapper">
+              <input type="password" id="password" placeholder="Enter Tactical Key" required>
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+          </div>
+
+          <div id="admin-fields" class="hidden">
+            <div class="input-group">
+              <label for="command-code">Command Override Code</label>
+              <div class="input-wrapper">
+                <input type="text" id="command-code" placeholder="Enter Command Override Code" autocomplete="off">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-login">
+            <span class="btn-text">Authenticate</span>
+            <span class="btn-loader"></span>
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <span class="status-dot"></span>
+          <span>Secure Offline Connection</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLDIER VIEW -->
+  <div id="soldier-view" class="view">
+    <nav class="topbar soldier-topbar">
+      <div class="topbar-left">
+        <div class="logo-sm">TACTIX</div>
+        <div class="status-badge online">ONLINE</div>
+      </div>
+      <div class="topbar-right">
+        <span class="user-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="soldier-name">Soldier</span>
+        </span>
+        <button class="btn-icon" id="logout-soldier" title="Disconnect">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <main class="soldier-main">
+      <!-- SOS Button -->
+      <button id="sos-btn" class="sos-button" title="Emergency Alert">
+        <div class="sos-ring"></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      </button>
+
+      <!-- Map Section -->
+      <section class="card map-card">
+        <div class="card-header">
+          <h2>Squad View</h2>
+          <span class="badge" id="squad-count">4 Active</span>
+        </div>
+        <div id="soldier-map" class="map-container"></div>
+      </section>
+
+      <!-- Radio Messenger -->
+      <section class="card radio-card">
+        <div class="card-header">
+          <h2>Radio Messenger</h2>
+          <span class="badge success" id="radio-status">LoRa Ready</span>
+        </div>
+        <div class="radio-controls">
+          <div class="input-group compact">
+            <label>Frequency</label>
+            <input type="text" id="radio-freq" value="433.125 MHz" readonly>
+          </div>
+          <div class="input-group compact">
+            <label>Power</label>
+            <input type="text" id="radio-power" value="20 dBm" readonly>
+          </div>
+          <button class="btn-ghost" id="connect-lora">Connect LoRa</button>
+        </div>
+        <div class="message-feed" id="soldier-msg-feed">
+          <div class="msg-system">Establishing secure LoRa link...</div>
+        </div>
+        <div class="message-input-row">
+          <input type="text" id="soldier-msg-input" placeholder="Type tactical message...">
+          <button class="btn-primary" id="send-soldier-msg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Hardware Status -->
+      <section class="card hardware-card">
+        <div class="card-header">
+          <h2>Hardware Nodes</h2>
+        </div>
+        <div class="hardware-grid">
+          <div class="hw-item">
+            <div class="hw-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            </div>
+            <div class="hw-info">
+              <span class="hw-label">GPS Node</span>
+              <span class="hw-value" id="gps-coords">Acquiring...</span>
+            </div>
+            <span class="hw-status online">LIVE</span>
+          </div>
+          <div class="hw-item">
+            <div class="hw-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5l11 11M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div class="hw-info">
+              <span class="hw-label">BLE Beacon</span>
+              <span class="hw-value" id="ble-rssi">-- dBm</span>
+            </div>
+            <span class="hw-status idle">IDLE</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ADMIN VIEW -->
+  <div id="admin-view" class="view">
+    <nav class="topbar admin-topbar">
+      <div class="topbar-left">
+        <div class="logo-sm">TACTIX</div>
+        <div class="status-badge warning">CMD ACTIVE</div>
+      </div>
+      <div class="topbar-right">
+        <span class="user-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="admin-name">Command Officer</span>
+        </span>
+        <button class="btn-icon" id="logout-admin" title="Disconnect">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        </button>
+      </div>
+    </nav>
+
+    <main class="admin-main">
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value" id="stat-total">0</span>
+            <span class="stat-label">Active Personnel</span>
+          </div>
+        </div>
+        <div class="stat-card alert">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value" id="stat-sos">0</span>
+            <span class="stat-label">Active SOS</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div class="stat-content">
+            <span class="stat-value" id="stat-enc">AES-256</span>
+            <span class="stat-label">Encryption</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-grid">
+        <!-- Global Tactical Map -->
+        <section class="card map-card admin-map-card">
+          <div class="card-header">
+            <h2>Global Tactical Map</h2>
+            <div class="map-controls">
+              <button class="btn-ghost sm" id="toggle-indoor">Indoor BLE</button>
+              <button class="btn-ghost sm" id="toggle-outdoor">Outdoor GPS</button>
+            </div>
+          </div>
+          <div id="admin-map" class="map-container"></div>
+        </section>
+
+        <!-- Emergency Override -->
+        <section class="card emergency-card">
+          <div class="card-header">
+            <h2>Emergency Override</h2>
+            <span class="badge alert" id="emergency-badge">NO ALERTS</span>
+          </div>
+          <div id="emergency-feed" class="emergency-feed">
+            <div class="empty-state">No active emergencies</div>
+          </div>
+          <div class="emergency-actions">
+            <button class="btn-danger" id="broadcast-redeploy">Squad Redeploy</button>
+            <button class="btn-ghost" id="clear-emergency">Mark Resolved</button>
+          </div>
+        </section>
+
+        <!-- Encrypted Database Control -->
+        <section class="card db-card">
+          <div class="card-header">
+            <h2>Encrypted Vault</h2>
+            <span class="badge" id="db-status">Locked</span>
+          </div>
+          <div class="db-controls">
+            <button class="btn-primary" id="backup-db">Backup Logs</button>
+            <button class="btn-ghost" id="view-db">View Logs</button>
+            <button class="btn-danger" id="wipe-db">Wipe Database</button>
+          </div>
+          <div id="db-logs" class="db-logs hidden">
+            <div class="log-entry"><span class="log-time">08:12</span><span class="log-type info">INFO</span> System initialized</div>
+            <div class="log-entry"><span class="log-time">08:15</span><span class="log-type info">INFO</span> AES-256 keys loaded</div>
+          </div>
+        </section>
+
+        <!-- Strategic AI Chat -->
+        <section class="card ai-card">
+          <div class="card-header">
+            <h2>Strategic AI Planner</h2>
+            <span class="badge success">LOCAL LLM</span>
+          </div>
+          <div class="chat-messages" id="ai-chat">
+            <div class="chat-bubble ai">
+              <span class="bubble-text">TACTIX AI online. Awaiting mission parameters. I can assist with perimeter defense, counter-ambush protocols, and casualty extraction planning.</span>
+            </div>
+          </div>
+          <div class="quick-prompts">
+            <button class="chip-btn" data-prompt="Perimeter defense plan">Perimeter</button>
+            <button class="chip-btn" data-prompt="Counter-ambush rules of engagement">Counter-Ambush</button>
+            <button class="chip-btn" data-prompt="Casualty extraction protocol">Extraction</button>
+            <button class="chip-btn" data-prompt="Night movement tactics">Night Ops</button>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="ai-input" placeholder="Query mission parameters...">
+            <button class="btn-primary" id="ai-send">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- Radio Admin -->
+        <section class="card radio-admin-card">
+          <div class="card-header">
+            <h2>Radio & Frequency</h2>
+          </div>
+          <div class="radio-admin-grid">
+            <div class="input-group compact">
+              <label>Base Freq (MHz)</label>
+              <input type="text" id="base-freq" value="433.125">
+            </div>
+            <div class="input-group compact">
+              <label>Spread (MHz)</label>
+              <input type="text" id="spread-factor" value="128">
+            </div>
+            <button class="btn-primary full" id="set-freq">Shift Frequency</button>
+          </div>
+          <div class="connected-modules">
+            <h3>Connected Modules</h3>
+            <div class="module-list">
+              <div class="module-item">
+                <span class="module-id">ESP32-A1</span>
+                <span class="module-status online">LINK</span>
+              </div>
+              <div class="module-item">
+                <span class="module-id">ESP32-B2</span>
+                <span class="module-status idle">STANDBY</span>
+              </div>
+              <div class="module-item">
+                <span class="module-id">ESP32-C3</span>
+                <span class="module-status online">LINK</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/protobuf.js"></script>
+  <script src="js/serial.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/ai-bot.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+    }
+  </script>
+</body>
+</html>
